@@ -1,0 +1,16 @@
+<!DOCTYPE html><html><head><title>Lumina v9 Test</title>
+<style>body{font-family:sans-serif;padding:2rem;background:#111;color:#fff}button{background:#C9A84C;color:#000;border:none;padding:.8rem 2rem;border-radius:8px;cursor:pointer;font-size:1rem}pre{background:#222;padding:1rem;border-radius:8px;margin-top:1rem;white-space:pre-wrap}.ok{color:#4ADE80;font-weight:bold}.err{color:#FB7185;font-weight:bold}</style></head>
+<body><h2 style="color:#C9A84C">🔧 Lumina AI v9 — API Test</h2>
+<button onclick="test()">▶ Run Test</button>
+<pre id="out">Click to test...</pre>
+<script>
+async function test(){
+  document.getElementById('out').textContent='⏳ Connecting...';
+  try{
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-opus-4-6',max_tokens:60,messages:[{role:'user',content:'Say: LUMINA AI V9 ACTIVE ✓'}]})});
+    const d=await r.json();
+    document.getElementById('out').innerHTML=d.content?.[0]?.text?'<span class="ok">✅ '+d.content[0].text+'</span>':'<span class="err">❌ '+JSON.stringify(d)+'</span>';
+  }catch(e){document.getElementById('out').innerHTML='<span class="err">❌ '+e.message+'</span>';}
+}
+</script></body></html>
