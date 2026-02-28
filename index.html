@@ -6064,3 +6064,1115 @@ window.handleLogin = function() {
 
 console.log('✦ Lumina AI v9 loaded — all features active');
 </script>
+<!DOCTYPE html>
+<!--
+  LUMINA AI — VIDEO EXPLAINER MODULE
+  ====================================
+  Drop this file into your repository root.
+  Link to it from your dashboard with:
+    <a href="/lumina-video-explainer.html">🎬 Video Explainer</a>
+  
+  Or embed the entire <div id="lumina-video-root"> block
+  plus the <script> tag into your existing index.html.
+
+  REQUIRES: Your /api/chat endpoint (already in your repo)
+  NO other dependencies needed.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Explainer — Lumina AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- MathJax for equations -->
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},options:{skipHtmlTags:['script','noscript','style','textarea']}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+<style>
+/* ══════════════════════════════════════════
+   LUMINA VIDEO EXPLAINER — STANDALONE MODULE
+   ══════════════════════════════════════════ */
+:root {
+  --bg0: #08090E;
+  --bg1: #0D0F18;
+  --bg2: #121520;
+  --bg3: #181C2A;
+  --bg4: #1E2235;
+  --gold: #C9A84C;
+  --gold-light: #E8C96A;
+  --white: #F0EEF8;
+  --muted: #6B7394;
+  --border: rgba(255,255,255,0.07);
+  --green: #4ADE80;
+  --blue: #60A5FA;
+  --purple: #A78BFA;
+  --pink: #F472B6;
+  --red: #FB7185;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --radius: 16px;
+  --shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg0);
+  color: var(--white);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  line-height: 1.6;
+}
+
+/* ── BACK LINK ── */
+.back-link {
+  display: inline-flex; align-items: center; gap: .5rem;
+  color: var(--muted); font-size: .85rem; text-decoration: none;
+  margin-bottom: 2rem; transition: color .2s;
+  font-family: var(--font-mono);
+}
+.back-link:hover { color: var(--gold); }
+
+/* ── HEADER ── */
+.vid-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+.vid-header h1 {
+  font-family: var(--font-head);
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold), #A07830);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: .5rem;
+}
+.vid-header p {
+  color: var(--muted); font-size: .95rem; max-width: 500px; margin: 0 auto;
+}
+
+/* ── MAIN LAYOUT ── */
+.vid-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+@media (max-width: 860px) {
+  .vid-layout { grid-template-columns: 1fr; }
+}
+
+/* ── FORM PANEL ── */
+.form-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  height: fit-content;
+  position: sticky;
+  top: 1rem;
+}
+.form-panel h3 {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--gold);
+}
+.field { margin-bottom: 1rem; }
+.field label {
+  display: block;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: .4rem;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .65rem .9rem;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: .875rem;
+  transition: border-color .2s;
+  resize: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--gold);
+}
+.field select option { background: var(--bg3); }
+
+/* ── STYLE PILLS ── */
+.style-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: .4rem; margin-top: .4rem;
+}
+.style-pill {
+  padding: .5rem; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--muted);
+  cursor: pointer; font-size: .78rem;
+  font-family: var(--font-body);
+  text-align: center; transition: all .2s;
+}
+.style-pill:hover { border-color: var(--gold); color: var(--white); }
+.style-pill.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  color: var(--gold); font-weight: 600;
+}
+
+/* ── GENERATE BUTTON ── */
+.btn-generate {
+  width: 100%; padding: .9rem;
+  background: linear-gradient(135deg, var(--gold), #A07830);
+  color: #0D0F18; border: none; border-radius: 10px;
+  font-family: var(--font-head); font-size: 1rem;
+  font-weight: 700; cursor: pointer;
+  transition: all .25s; margin-top: 1.25rem;
+  display: flex; align-items: center; justify-content: center;
+  gap: .5rem;
+}
+.btn-generate:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(201,168,76,0.35);
+}
+.btn-generate:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* ── PROGRESS BAR ── */
+.gen-progress {
+  height: 3px; background: var(--bg4); border-radius: 2px;
+  overflow: hidden; margin-top: 1rem;
+}
+.gen-progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--gold), var(--green));
+  border-radius: 2px; transition: width .4s ease;
+}
+
+/* ── VIDEO PANEL ── */
+.video-panel {
+  display: flex; flex-direction: column; gap: 1.25rem;
+}
+
+/* ── STAGE (main video area) ── */
+.vid-stage {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.vid-stage-empty {
+  text-align: center; padding: 2rem; color: var(--muted);
+}
+.vid-stage-empty .big-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: .4; }
+.vid-stage-empty p { font-size: .9rem; }
+
+/* ── SCENE CONTENT ── */
+.scene-wrap {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2.5rem;
+  position: relative;
+  text-align: center;
+  opacity: 0;
+  animation: sceneIn .6s ease forwards;
+}
+@keyframes sceneIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.scene-bg-orb {
+  position: absolute; width: 340px; height: 340px;
+  border-radius: 50%; filter: blur(80px); opacity: .18;
+  pointer-events: none;
+}
+.scene-num {
+  position: absolute; top: 1rem; left: 1rem;
+  font-family: var(--font-mono); font-size: .7rem;
+  color: var(--muted); background: rgba(0,0,0,0.4);
+  padding: .25rem .6rem; border-radius: 6px;
+}
+.scene-subject-badge {
+  position: absolute; top: 1rem; right: 1rem;
+  font-size: .7rem; font-weight: 700;
+  padding: .25rem .75rem; border-radius: 20px;
+}
+.scene-emoji { font-size: 3rem; margin-bottom: 1rem; line-height: 1; }
+.scene-title {
+  font-family: var(--font-head);
+  font-size: clamp(1.1rem, 2.5vw, 1.7rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+.scene-body {
+  font-size: clamp(.85rem, 1.5vw, 1rem);
+  line-height: 1.75; color: rgba(240,238,248,0.88);
+  max-width: 520px;
+}
+/* Canvas for diagrams */
+.scene-canvas {
+  border-radius: 10px; margin: .75rem auto 0;
+  display: block; max-width: 100%;
+}
+
+/* ── WAVEFORM (TTS visualiser) ── */
+.waveform-bar-group {
+  display: flex; align-items: center; justify-content: center;
+  gap: 3px; position: absolute; bottom: 1rem; left: 50%;
+  transform: translateX(-50%);
+}
+.waveform-bar {
+  width: 3px; border-radius: 2px;
+  background: var(--gold); opacity: .6;
+  animation: wavePulse 1.2s ease-in-out infinite;
+}
+.waveform-bar:nth-child(1) { animation-delay: 0s; }
+.waveform-bar:nth-child(2) { animation-delay: .1s; }
+.waveform-bar:nth-child(3) { animation-delay: .2s; }
+.waveform-bar:nth-child(4) { animation-delay: .3s; }
+.waveform-bar:nth-child(5) { animation-delay: .2s; }
+.waveform-bar:nth-child(6) { animation-delay: .1s; }
+.waveform-bar:nth-child(7) { animation-delay: 0s; }
+@keyframes wavePulse {
+  0%, 100% { height: 4px; }
+  50% { height: 20px; }
+}
+
+/* ── CONTROLS ── */
+.vid-controls {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex; align-items: center; gap: .75rem;
+  flex-wrap: wrap;
+}
+.ctrl-btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: .35rem; padding: .55rem 1rem;
+  border-radius: 9px; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--white);
+  font-family: var(--font-body); font-size: .82rem;
+  font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.ctrl-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+.ctrl-btn:disabled { opacity: .35; cursor: not-allowed; }
+.ctrl-btn.primary {
+  background: var(--gold); color: #0D0F18;
+  border-color: var(--gold);
+}
+.ctrl-btn.primary:hover { background: var(--gold-light); }
+.ctrl-btn.active { border-color: var(--green); color: var(--green); }
+.ctrl-spacer { flex: 1; }
+.scene-counter {
+  font-family: var(--font-mono); font-size: .78rem;
+  color: var(--muted); white-space: nowrap;
+}
+
+/* ── TIMELINE ── */
+.timeline {
+  display: flex; gap: .35rem; overflow-x: auto;
+  padding-bottom: .25rem;
+}
+.timeline::-webkit-scrollbar { height: 3px; }
+.timeline::-webkit-scrollbar-track { background: var(--bg3); }
+.timeline::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+.tl-dot {
+  flex-shrink: 0; width: 32px; height: 6px;
+  border-radius: 3px; background: var(--bg4);
+  cursor: pointer; transition: all .2s;
+  border: 1px solid transparent;
+}
+.tl-dot:hover { background: rgba(201,168,76,0.3); }
+.tl-dot.active { background: var(--gold); }
+.tl-dot.done { background: rgba(201,168,76,0.4); }
+
+/* ── TRANSCRIPT ── */
+.transcript-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  max-height: 200px; overflow-y: auto;
+  display: none;
+}
+.transcript-panel.open { display: block; }
+.transcript-panel h4 {
+  font-size: .8rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: .75rem;
+}
+.transcript-line {
+  font-size: .875rem; line-height: 1.7; padding: .3rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.transcript-line:last-child { border: none; }
+.transcript-line .tl-num {
+  font-family: var(--font-mono); color: var(--gold);
+  font-size: .75rem; margin-right: .5rem;
+}
+
+/* ── VOICE SELECTOR ── */
+.voice-grid {
+  display: flex; gap: .4rem; flex-wrap: wrap;
+}
+.voice-chip {
+  padding: .3rem .7rem; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--bg3);
+  color: var(--muted); font-size: .75rem;
+  cursor: pointer; transition: all .2s;
+}
+.voice-chip.active { border-color: var(--gold); color: var(--gold); }
+
+/* ── SPEED SLIDER ── */
+.speed-row {
+  display: flex; align-items: center; gap: .75rem;
+  font-size: .8rem; color: var(--muted);
+}
+.speed-row input[type=range] {
+  flex: 1; accent-color: var(--gold); cursor: pointer;
+}
+.speed-val {
+  font-family: var(--font-mono); color: var(--gold);
+  font-size: .8rem; min-width: 32px;
+}
+
+/* ── TOAST ── */
+.toast-container {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  z-index: 9999; display: flex; flex-direction: column;
+  gap: .5rem; pointer-events: none;
+}
+.toast {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: .7rem 1.1rem;
+  font-size: .85rem; box-shadow: var(--shadow);
+  animation: toastIn .3s ease, toastOut .3s ease 2.5s forwards;
+  pointer-events: auto;
+}
+@keyframes toastIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes toastOut { to { opacity:0; transform:translateY(10px); } }
+</style>
+</head>
+
+<body>
+<a href="/" class="back-link">← Back to Lumina</a>
+
+<div id="lumina-video-root">
+
+  <div class="vid-header">
+    <h1>🎬 Video Explainer</h1>
+    <p>AI-generated step-by-step explanations with voice narration and live diagrams</p>
+  </div>
+
+  <div class="vid-layout">
+
+    <!-- ── FORM PANEL ── -->
+    <div class="form-panel">
+      <h3>✦ Configure Your Video</h3>
+
+      <div class="field">
+        <label>Topic</label>
+        <input type="text" id="vid-topic" placeholder="e.g. Pythagoras' theorem, Osmosis, WW2 causes...">
+      </div>
+
+      <div class="field">
+        <label>Subject</label>
+        <select id="vid-subject">
+          <option>Mathematics</option>
+          <option>Physics</option>
+          <option>Chemistry</option>
+          <option>Biology</option>
+          <option>English Literature</option>
+          <option>History</option>
+          <option>Geography</option>
+          <option>Computer Science</option>
+          <option>Economics</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Level</label>
+        <select id="vid-level">
+          <option>Key Stage 3</option>
+          <option>Foundation GCSE</option>
+          <option>Higher GCSE</option>
+          <option>A-Level</option>
+          <option>Undergraduate</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Explanation Style</label>
+        <div class="style-grid">
+          <button class="style-pill active" data-style="step-by-step" onclick="setStyle(this)">📝 Step by Step</button>
+          <button class="style-pill" data-style="story" onclick="setStyle(this)">📖 Story</button>
+          <button class="style-pill" data-style="visual" onclick="setStyle(this)">🎨 Visual</button>
+          <button class="style-pill" data-style="exam" onclick="setStyle(this)">🎯 Exam Focus</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Length</label>
+        <select id="vid-length">
+          <option value="5">Short (5 scenes)</option>
+          <option value="8" selected>Standard (8 scenes)</option>
+          <option value="12">Detailed (12 scenes)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Voice Narration</label>
+        <div class="voice-grid" id="voice-grid">
+          <div class="voice-chip active" data-voice="" onclick="setVoice(this)">🇬🇧 UK Default</div>
+          <div class="voice-chip" data-voice="en-GB-female" onclick="setVoice(this)">👩 Female</div>
+          <div class="voice-chip" data-voice="en-GB-male" onclick="setVoice(this)">👨 Male</div>
+          <div class="voice-chip" data-voice="en-US" onclick="setVoice(this)">🇺🇸 US</div>
+          <div class="voice-chip" data-voice="off" onclick="setVoice(this)">🔇 Off</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Narration Speed</label>
+        <div class="speed-row">
+          <span>0.7×</span>
+          <input type="range" id="speed-slider" min="0.7" max="1.5" step="0.1" value="1.0" oninput="setSpeed(this.value)">
+          <span>1.5×</span>
+          <span class="speed-val" id="speed-display">1.0×</span>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="gen-btn" onclick="generateVideo()">
+        <i class="fas fa-film"></i> Generate Video
+      </button>
+      <div class="gen-progress"><div class="gen-progress-fill" id="gen-prog"></div></div>
+    </div>
+
+    <!-- ── VIDEO PANEL ── -->
+    <div class="video-panel">
+
+      <!-- Stage -->
+      <div class="vid-stage" id="vid-stage">
+        <div class="vid-stage-empty">
+          <div class="big-icon">🎬</div>
+          <p>Your video will appear here.<br>Enter a topic and click <strong style="color:var(--gold)">Generate Video</strong>.</p>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline" id="vid-timeline"></div>
+
+      <!-- Controls -->
+      <div class="vid-controls" id="vid-controls" style="display:none">
+        <button class="ctrl-btn primary" id="play-btn" onclick="togglePlay()" disabled>
+          <i class="fas fa-play"></i> Play
+        </button>
+        <button class="ctrl-btn" onclick="prevScene()" id="prev-btn" disabled>
+          <i class="fas fa-step-backward"></i>
+        </button>
+        <button class="ctrl-btn" onclick="nextScene()" id="next-btn" disabled>
+          <i class="fas fa-step-forward"></i>
+        </button>
+        <button class="ctrl-btn" id="tts-btn" onclick="toggleTTS()">
+          <i class="fas fa-volume-up"></i>
+        </button>
+        <button class="ctrl-btn" onclick="toggleTranscript()" id="transcript-btn">
+          <i class="fas fa-align-left"></i> Transcript
+        </button>
+        <div class="ctrl-spacer"></div>
+        <span class="scene-counter" id="scene-counter">— / —</span>
+        <button class="ctrl-btn" onclick="saveToNotes()">
+          <i class="fas fa-book"></i> Save
+        </button>
+        <button class="ctrl-btn" onclick="restartVideo()">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+
+      <!-- Transcript -->
+      <div class="transcript-panel" id="transcript-panel">
+        <h4>Transcript</h4>
+        <div id="transcript-lines"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// LUMINA AI — VIDEO EXPLAINER
+// Full TTS + animated diagrams + scene engine
+// ════════════════════════════════════════════════
+
+const state = {
+  scenes: [],
+  idx: 0,
+  playing: false,
+  interval: null,
+  ttsEnabled: true,
+  voiceGender: '',
+  speed: 1.0,
+  style: 'step-by-step',
+  synth: window.speechSynthesis,
+  currentUtterance: null,
+  voices: [],
+};
+
+// ── VOICE SETUP ──────────────────────────────────
+function loadVoices() {
+  state.voices = window.speechSynthesis.getVoices();
+}
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function getBestVoice(pref) {
+  const voices = state.voices;
+  if (!voices.length) return null;
+  if (pref === 'off') return null;
+  const prefs = [
+    v => v.lang.startsWith('en-GB') && v.name.includes('Female'),
+    v => v.lang.startsWith('en-GB') && v.name.toLowerCase().includes('female'),
+    v => v.lang.startsWith('en-GB'),
+    v => v.lang.startsWith('en-US') && v.name.includes('Female'),
+    v => v.lang.startsWith('en'),
+    v => true
+  ];
+  if (pref === 'en-US') return voices.find(v => v.lang.startsWith('en-US')) || voices[0];
+  if (pref === 'en-GB-male') return voices.find(v => v.lang.startsWith('en-GB') && v.name.toLowerCase().includes('male')) || voices.find(v => v.lang.startsWith('en-GB')) || voices[0];
+  for (const p of prefs) { const v = voices.find(p); if (v) return v; }
+  return voices[0];
+}
+
+// ── CONTROLS ─────────────────────────────────────
+function setStyle(btn) {
+  document.querySelectorAll('.style-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.style = btn.dataset.style;
+}
+function setVoice(chip) {
+  document.querySelectorAll('.voice-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  state.voiceGender = chip.dataset.voice;
+  state.ttsEnabled = chip.dataset.voice !== 'off';
+  document.getElementById('tts-btn').classList.toggle('active', state.ttsEnabled);
+}
+function setSpeed(v) {
+  state.speed = parseFloat(v);
+  document.getElementById('speed-display').textContent = state.speed.toFixed(1) + '×';
+}
+function toggleTTS() {
+  state.ttsEnabled = !state.ttsEnabled;
+  document.getElementById('tts-btn').classList.toggle('active', state.ttsEnabled);
+  if (!state.ttsEnabled) state.synth.cancel();
+  showToast(state.ttsEnabled ? '🔊 Narration on' : '🔇 Narration off');
+}
+function toggleTranscript() {
+  document.getElementById('transcript-panel').classList.toggle('open');
+}
+
+// ── TOAST ─────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ── API CALL ─────────────────────────────────────
+async function callAI(messages, system) {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 4000,
+      system,
+      messages
+    })
+  });
+  if (!res.ok) throw new Error('API error: ' + res.status);
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+// ── GENERATE ─────────────────────────────────────
+async function generateVideo() {
+  const topic = document.getElementById('vid-topic').value.trim();
+  const subject = document.getElementById('vid-subject').value;
+  const level = document.getElementById('vid-level').value;
+  const length = parseInt(document.getElementById('vid-length').value);
+
+  if (!topic) { showToast('Please enter a topic first'); document.getElementById('vid-topic').focus(); return; }
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+  setProgress(15);
+
+  const styleGuides = {
+    'step-by-step': `Break the topic into ${length} clear numbered steps. Each scene covers ONE step with concrete detail.`,
+    'story':         `Tell the topic as an engaging narrative story with characters or historical figures. Make it memorable and vivid.`,
+    'visual':        `Describe visual diagrams, colour-coded elements, spatial relationships. Include specific diagram instructions in each scene.`,
+    'exam':          `Focus on exam technique — mark scheme points, common mistakes, command words, examiner tips. Very practical.`
+  };
+
+  const system = `You are Lumina, an expert UK ${subject} tutor creating a video explainer for a ${level} student about: "${topic}".
+
+Style: ${styleGuides[state.style]}
+
+Return ONLY a valid JSON array of exactly ${length} scene objects. No markdown, no explanation, just the JSON array:
+[
+  {
+    "emoji": "single emoji",
+    "title": "Scene title (max 8 words)",
+    "body": "2-3 sentences of clear explanation. UK curriculum accurate. Simple vocabulary appropriate for ${level}.",
+    "diagram": "none | graph | triangle | circle | bar_chart | equation | timeline | cell | atom | none",
+    "diagramData": { optional object with data for the diagram type },
+    "color": "#hexcolor for scene background accent",
+    "speakText": "What the narrator says aloud — slightly more conversational version of body, 1-2 sentences"
+  }
+]
+
+Diagram types: use "equation" for maths topics, "graph" for data/functions, "triangle" for geometry, "atom" for chemistry/physics, "cell" for biology, "timeline" for history, "bar_chart" for comparisons, "circle" for cycles/processes, "none" if no diagram needed.
+For diagramData — equation: {"latex":"e.g. a^2 + b^2 = c^2"}, graph: {"points":[[x,y]...],"label":"axis label"}, bar_chart: {"bars":[{"label":"A","value":70},...]}.
+Colors: use rich, saturated hex colors that will look good as subtle glowing accents on a dark background.`;
+
+  try {
+    setProgress(40);
+    const raw = await callAI([{ role: 'user', content: `Create a ${length}-scene video explainer about "${topic}" for ${level} ${subject}.` }], system);
+    setProgress(80);
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    state.scenes = JSON.parse(cleaned);
+    state.idx = 0;
+    setProgress(100);
+    buildTimeline();
+    buildTranscript();
+    renderScene(0);
+    showControls();
+    showToast(`✅ ${state.scenes.length} scenes ready — press Play!`);
+    setTimeout(() => setProgress(0), 600);
+  } catch(e) {
+    showToast('⚠️ Could not generate — check your API connection');
+    console.error(e);
+    setProgress(0);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-film"></i> Generate Video';
+}
+
+function setProgress(pct) {
+  document.getElementById('gen-prog').style.width = pct + '%';
+}
+
+// ── SCENE RENDERING ───────────────────────────────
+const SUBJECT_COLORS = {
+  Mathematics: '#60A5FA', Physics: '#4ADE80', Chemistry: '#A78BFA',
+  Biology: '#F472B6', 'English Literature': '#FB923C', History: '#FBBF24',
+  Geography: '#34D399', 'Computer Science': '#F97316', Economics: '#C9A84C'
+};
+
+function renderScene(idx) {
+  state.idx = idx;
+  const scene = state.scenes[idx];
+  if (!scene) return;
+
+  const subject = document.getElementById('vid-subject').value;
+  const subjectColor = SUBJECT_COLORS[subject] || '#C9A84C';
+  const sceneColor = scene.color || subjectColor;
+
+  // Build scene HTML
+  const stage = document.getElementById('vid-stage');
+  stage.innerHTML = `
+    <div class="scene-wrap" id="current-scene" style="background: radial-gradient(ellipse at 60% 30%, ${sceneColor}18 0%, transparent 70%), var(--bg1)">
+      <div class="scene-bg-orb" style="background:${sceneColor};top:-80px;right:-60px"></div>
+      <div class="scene-num">Scene ${idx+1} of ${state.scenes.length}</div>
+      <div class="scene-subject-badge" style="background:${sceneColor}22;color:${sceneColor}">${subject}</div>
+      <div class="scene-emoji">${scene.emoji || '📚'}</div>
+      <div class="scene-title" style="color:${sceneColor}">${scene.title}</div>
+      <div class="scene-body" id="scene-body-text">${scene.body}</div>
+      ${scene.diagram && scene.diagram !== 'none' ? `<canvas class="scene-canvas" id="diagram-canvas" width="460" height="180"></canvas>` : ''}
+      ${state.ttsEnabled ? `<div class="waveform-bar-group" id="waveform">${Array(7).fill('<div class="waveform-bar" style="height:4px"></div>').join('')}</div>` : ''}
+    </div>`;
+
+  // Draw diagram
+  if (scene.diagram && scene.diagram !== 'none') {
+    requestAnimationFrame(() => drawDiagram(scene.diagram, scene.diagramData, sceneColor));
+  }
+
+  // MathJax render
+  if (window.MathJax) {
+    window.MathJax.typesetPromise([document.getElementById('scene-body-text')]).catch(() => {});
+  }
+
+  // Update timeline
+  updateTimeline();
+
+  // Update counter
+  document.getElementById('scene-counter').textContent = `${idx + 1} / ${state.scenes.length}`;
+  document.getElementById('prev-btn').disabled = idx === 0;
+  document.getElementById('next-btn').disabled = idx === state.scenes.length - 1;
+
+  // Speak
+  if (state.ttsEnabled) speak(scene.speakText || scene.body);
+}
+
+// ── DIAGRAM ENGINE ────────────────────────────────
+function drawDiagram(type, data, color) {
+  const canvas = document.getElementById('diagram-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2;
+  ctx.font = '13px DM Sans, sans-serif';
+
+  if (type === 'triangle') {
+    // Right-angled triangle (Pythagoras style)
+    ctx.beginPath(); ctx.moveTo(80, H-40); ctx.lineTo(380, H-40); ctx.lineTo(80, 40); ctx.closePath();
+    ctx.strokeStyle = color; ctx.stroke();
+    // Labels
+    ctx.fillStyle = 'rgba(240,238,248,0.7)'; ctx.textAlign = 'center';
+    ctx.fillText('a', 230, H-20);
+    ctx.fillText('b', 62, H/2);
+    ctx.fillStyle = color; ctx.font = 'bold 14px Syne, sans-serif';
+    ctx.fillText('c (hypotenuse)', 250, H/2 - 20);
+    // Right angle marker
+    ctx.strokeStyle = 'rgba(240,238,248,0.3)';
+    ctx.strokeRect(80, H-60, 20, 20);
+    // Equation
+    ctx.fillStyle = color; ctx.font = 'bold 15px DM Mono, monospace'; ctx.textAlign = 'right';
+    ctx.fillText('a² + b² = c²', W-20, 30);
+  }
+  else if (type === 'graph') {
+    const pts = data?.points || [[0,0],[1,1],[2,4],[3,9],[4,16]];
+    const maxY = Math.max(...pts.map(p=>p[1])) || 1;
+    const maxX = Math.max(...pts.map(p=>p[0])) || 1;
+    const pad = 40;
+    // Axes
+    ctx.strokeStyle = 'rgba(240,238,248,0.2)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(pad, H-pad); ctx.lineTo(W-pad, H-pad); ctx.stroke();
+    // Grid lines
+    for (let i=1; i<=4; i++) {
+      const y = pad + (H - 2*pad) * (1 - i/4);
+      ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W-pad, y); ctx.stroke();
+    }
+    // Plot line
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    pts.forEach((p, i) => {
+      const x = pad + (p[0]/maxX) * (W - 2*pad);
+      const y = H - pad - (p[1]/maxY) * (H - 2*pad);
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // Dots
+    ctx.fillStyle = color;
+    pts.forEach(p => {
+      const x = pad + (p[0]/maxX) * (W - 2*pad);
+      const y = H - pad - (p[1]/maxY) * (H - 2*pad);
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+    });
+    // Axis label
+    if (data?.label) { ctx.fillStyle = 'rgba(240,238,248,0.5)'; ctx.textAlign='right'; ctx.font='11px DM Sans'; ctx.fillText(data.label, W-pad, H-8); }
+  }
+  else if (type === 'bar_chart') {
+    const bars = data?.bars || [{label:'A',value:70},{label:'B',value:90},{label:'C',value:55}];
+    const max = Math.max(...bars.map(b=>b.value));
+    const pad = 30, barW = Math.min(60, (W - 2*pad) / bars.length - 10);
+    const colors = [color, '#4ADE80', '#60A5FA', '#F472B6', '#FBBF24', '#A78BFA'];
+    bars.forEach((bar, i) => {
+      const x = pad + i * ((W - 2*pad) / bars.length);
+      const barH = ((bar.value / max) * (H - pad - 40));
+      const y = H - pad - barH;
+      ctx.fillStyle = colors[i % colors.length] + 'CC';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(x, y, barW, barH, 4) : ctx.rect(x, y, barW, barH);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(240,238,248,0.7)'; ctx.textAlign = 'center'; ctx.font = '11px DM Sans';
+      ctx.fillText(bar.label, x + barW/2, H-8);
+      ctx.fillStyle = colors[i % colors.length]; ctx.font = 'bold 12px DM Mono';
+      ctx.fillText(bar.value, x + barW/2, y - 6);
+    });
+  }
+  else if (type === 'atom') {
+    // Atom diagram
+    const cx = W/2, cy = H/2, r = 60;
+    // Nucleus
+    ctx.beginPath(); ctx.arc(cx, cy, 16, 0, Math.PI*2);
+    ctx.fillStyle = color + 'CC'; ctx.fill();
+    // Orbits
+    [[r, 0], [r*1.4, Math.PI/4], [r*1.8, Math.PI/3]].forEach(([rad, offset], i) => {
+      ctx.beginPath(); ctx.ellipse(cx, cy, rad, rad*0.4, offset, 0, Math.PI*2);
+      ctx.strokeStyle = color + '60'; ctx.lineWidth = 1.5; ctx.stroke();
+      // Electron
+      const angle = Date.now() * 0;
+      const ex = cx + rad * Math.cos(angle + offset);
+      const ey = cy + rad * 0.4 * Math.sin(angle + offset);
+      ctx.beginPath(); ctx.arc(ex, ey, 5, 0, Math.PI*2);
+      ctx.fillStyle = '#60A5FA'; ctx.fill();
+    });
+    ctx.fillStyle = 'rgba(240,238,248,0.6)'; ctx.textAlign='center'; ctx.font='12px DM Sans';
+    ctx.fillText('nucleus', cx, cy + 30);
+  }
+  else if (type === 'cell') {
+    // Simple cell diagram
+    ctx.beginPath(); ctx.ellipse(W/2, H/2, 180, 75, 0, 0, Math.PI*2);
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = color + '15'; ctx.fill();
+    // Nucleus
+    ctx.beginPath(); ctx.arc(W/2, H/2, 30, 0, Math.PI*2);
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = color + '30'; ctx.fill();
+    // Labels
+    ctx.fillStyle = 'rgba(240,238,248,0.7)'; ctx.textAlign='center'; ctx.font='12px DM Sans';
+    ctx.fillText('nucleus', W/2, H/2+5);
+    ctx.fillText('cell membrane', W/2, H/2+95);
+    ctx.fillText('cytoplasm', W/2+110, H/2-10);
+  }
+  else if (type === 'timeline') {
+    const items = data?.events || [{year:'1900',event:'Start'},{year:'1914',event:'WW1'},{year:'1939',event:'WW2'},{year:'1945',event:'End'}];
+    const pad = 40, lineY = H/2;
+    ctx.strokeStyle = 'rgba(240,238,248,0.2)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(pad, lineY); ctx.lineTo(W-pad, lineY); ctx.stroke();
+    const step = (W - 2*pad) / Math.max(items.length - 1, 1);
+    items.forEach((item, i) => {
+      const x = pad + i * step;
+      ctx.beginPath(); ctx.arc(x, lineY, 7, 0, Math.PI*2);
+      ctx.fillStyle = color; ctx.fill();
+      ctx.fillStyle = color; ctx.textAlign='center'; ctx.font='bold 11px DM Mono';
+      ctx.fillText(item.year, x, lineY - 18);
+      ctx.fillStyle = 'rgba(240,238,248,0.7)'; ctx.font='11px DM Sans';
+      const label = item.event.slice(0,10);
+      ctx.fillText(label, x, lineY + 22);
+    });
+  }
+  else if (type === 'circle') {
+    // Cycle diagram
+    const stages = data?.stages || ['Input','Process','Output','Feedback'];
+    const r = 70, cx = W/2, cy = H/2;
+    const angleStep = (Math.PI * 2) / stages.length;
+    stages.forEach((s, i) => {
+      const angle = -Math.PI/2 + i * angleStep;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      ctx.beginPath(); ctx.arc(x, y, 24, 0, Math.PI*2);
+      ctx.fillStyle = color + '33'; ctx.fill();
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = 'rgba(240,238,248,0.9)'; ctx.textAlign='center'; ctx.font='10px DM Sans';
+      ctx.fillText(s.slice(0,8), x, y+4);
+      // Arrow to next
+      const nextAngle = angle + angleStep;
+      const nx = cx + r * Math.cos(nextAngle);
+      const ny = cy + r * Math.sin(nextAngle);
+      const mx = (x + nx)/2, my = (y + ny)/2;
+      ctx.strokeStyle = color + '80'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(mx, my); ctx.stroke();
+    });
+  }
+  else if (type === 'equation') {
+    // Draw equation banner — MathJax handles it above, just show a decorative box
+    ctx.fillStyle = color + '15';
+    ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(40, 40, W-80, H-80, 12); else ctx.rect(40,40,W-80,H-80); ctx.fill();
+    ctx.strokeStyle = color + '40'; ctx.lineWidth = 1.5;
+    if(ctx.roundRect) ctx.roundRect(40,40,W-80,H-80,12); else ctx.rect(40,40,W-80,H-80); ctx.stroke();
+    // The LaTeX is shown via MathJax in the scene body text already
+    ctx.fillStyle = color + 'CC'; ctx.textAlign='center'; ctx.font='bold 14px DM Mono';
+    ctx.fillText(data?.latex || '', W/2, H/2 + 5);
+  }
+}
+
+// ── PLAYBACK ─────────────────────────────────────
+function togglePlay() {
+  state.playing ? pauseVideo() : playVideo();
+}
+
+function playVideo() {
+  if (!state.scenes.length) return;
+  state.playing = true;
+  document.getElementById('play-btn').innerHTML = '<i class="fas fa-pause"></i> Pause';
+  // Speak current scene
+  if (state.ttsEnabled) speak(state.scenes[state.idx].speakText || state.scenes[state.idx].body);
+}
+
+function pauseVideo() {
+  state.playing = false;
+  state.synth.cancel();
+  clearTimeout(state.autoNext);
+  document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i> Play';
+}
+
+function nextScene() {
+  if (state.idx < state.scenes.length - 1) {
+    state.synth.cancel();
+    clearTimeout(state.autoNext);
+    renderScene(state.idx + 1);
+    if (state.playing && !state.ttsEnabled) scheduleAutoNext();
+  } else {
+    pauseVideo();
+    showToast('🎬 Video complete!');
+  }
+}
+
+function prevScene() {
+  if (state.idx > 0) {
+    state.synth.cancel();
+    clearTimeout(state.autoNext);
+    renderScene(state.idx - 1);
+  }
+}
+
+function restartVideo() {
+  state.synth.cancel(); clearTimeout(state.autoNext);
+  state.idx = 0; state.playing = false;
+  document.getElementById('play-btn').innerHTML = '<i class="fas fa-play"></i> Play';
+  renderScene(0);
+}
+
+// ── TEXT-TO-SPEECH ────────────────────────────────
+function speak(text) {
+  if (!state.ttsEnabled || state.voiceGender === 'off') return;
+  state.synth.cancel();
+  if (!text) return;
+
+  // Clean text for speech (remove maths symbols etc)
+  const clean = text.replace(/\$[^$]+\$/g, '').replace(/[<>{}[\]]/g, '').replace(/\s+/g,' ').trim();
+
+  const utter = new SpeechSynthesisUtterance(clean);
+  utter.rate = state.speed;
+  utter.pitch = 1.0;
+  utter.lang = state.voiceGender === 'en-US' ? 'en-US' : 'en-GB';
+
+  const voice = getBestVoice(state.voiceGender);
+  if (voice) utter.voice = voice;
+
+  // Animate waveform while speaking
+  utter.onstart = () => animateWaveform(true);
+  utter.onend = () => {
+    animateWaveform(false);
+    if (state.playing) {
+      state.autoNext = setTimeout(() => nextScene(), 800);
+    }
+  };
+  utter.onerror = () => animateWaveform(false);
+
+  state.currentUtterance = utter;
+  // Workaround for Chrome bug that cuts off long utterances
+  setTimeout(() => state.synth.speak(utter), 100);
+}
+
+function animateWaveform(active) {
+  const wv = document.getElementById('waveform');
+  if (!wv) return;
+  const bars = wv.querySelectorAll('.waveform-bar');
+  bars.forEach((bar, i) => {
+    if (active) {
+      bar.style.animation = `wavePulse ${0.8 + i * 0.1}s ease-in-out infinite`;
+    } else {
+      bar.style.animation = 'none';
+      bar.style.height = '4px';
+    }
+  });
+}
+
+function scheduleAutoNext() {
+  clearTimeout(state.autoNext);
+  state.autoNext = setTimeout(() => nextScene(), 5000);
+}
+
+// ── TIMELINE ─────────────────────────────────────
+function buildTimeline() {
+  const tl = document.getElementById('vid-timeline');
+  const colors = state.scenes.map(s => s.color || '#C9A84C');
+  tl.innerHTML = state.scenes.map((s, i) =>
+    `<div class="tl-dot ${i===0?'active':''}" id="tl-${i}" style="--dot-color:${colors[i]}" onclick="jumpTo(${i})" title="${s.title}"></div>`
+  ).join('');
+}
+
+function updateTimeline() {
+  document.querySelectorAll('.tl-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === state.idx);
+    dot.classList.toggle('done', i < state.idx);
+    if (i === state.idx || i < state.idx) {
+      dot.style.background = state.scenes[i]?.color || 'var(--gold)';
+      dot.style.opacity = i < state.idx ? '0.5' : '1';
+    } else {
+      dot.style.background = '';
+      dot.style.opacity = '';
+    }
+  });
+}
+
+function jumpTo(idx) {
+  state.synth.cancel(); clearTimeout(state.autoNext);
+  renderScene(idx);
+  if (state.playing) {
+    // Speak and continue
+    if (!state.ttsEnabled) scheduleAutoNext();
+  }
+}
+
+// ── TRANSCRIPT ────────────────────────────────────
+function buildTranscript() {
+  document.getElementById('transcript-lines').innerHTML = state.scenes.map((s, i) =>
+    `<div class="transcript-line"><span class="tl-num">${i+1}.</span><strong>${s.title}</strong> — ${s.speakText || s.body}</div>`
+  ).join('');
+}
+
+// ── UI HELPERS ────────────────────────────────────
+function showControls() {
+  document.getElementById('vid-controls').style.display = 'flex';
+  document.getElementById('play-btn').disabled = false;
+  document.getElementById('prev-btn').disabled = true;
+  document.getElementById('next-btn').disabled = state.scenes.length <= 1;
+}
+
+function saveToNotes() {
+  const content = state.scenes.map((s,i) => `Scene ${i+1}: ${s.title}\n${s.body}`).join('\n\n');
+  const topic = document.getElementById('vid-topic').value;
+  const blob = new Blob([`VIDEO EXPLAINER: ${topic}\n${'='.repeat(40)}\n\n${content}`], {type:'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `lumina-${topic.replace(/\s+/g,'-').toLowerCase().slice(0,30)}.txt`;
+  a.click();
+  showToast('📓 Transcript downloaded!');
+}
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+  if (e.key === 'ArrowRight') nextScene();
+  if (e.key === 'ArrowLeft') prevScene();
+  if (e.key === 'm') toggleTTS();
+});
+
+// ── INIT ─────────────────────────────────────────
+document.getElementById('vid-topic').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generateVideo();
+});
+</script>
+</body>
+</html>
+
